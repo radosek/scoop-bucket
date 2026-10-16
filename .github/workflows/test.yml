@@ -1,0 +1,21 @@
+name: test
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  install:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Scoop and the manifest
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+          iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
+          $env:PATH = "$env:USERPROFILE\scoop\shims;$env:PATH"
+          scoop install .\bucket\urban.json
+          $out = & urban.exe -h
+          $out
+          if (-not ($out -match 'Urban v')) { exit 1 }
